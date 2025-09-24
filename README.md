@@ -31,7 +31,7 @@ TODO: add suggestions of elliptic curve arithmetic libraries.
 
 ---
 
-## ECDSA: The workshorse standard
+## ECDSA: The workhorse standard
 
 ### Exercise 1: Basic ECDSA signing
 
@@ -41,7 +41,7 @@ Sign the message "Hello Bitcoin!" using any private key of your choice.
 *Expected output*: a text file `submissions/exercise01.txt` with three lines:
 
 Line 1: Your public key (66 hex characters, compressed format)
-Line 2: Your signature (128 hex characters, r||s format)
+Line 2: Your signature (128 hex characters, `r||s` format)
 
 The notation `r||s` means `r` concatenated with `s`, no spaces in between the bytes.
 
@@ -52,44 +52,59 @@ The autograder will verify that your signature is mathematically valid for the g
 ### Exercise 2: ECDSA nonce reuse attack
 
 You are given two ECDSA signatures that were created using the same nonce `k` (a critical vulnerability).
-Use this to recover the private key, then sign the message "I broke ECDSA!" to prove you have the key.
+Use them to recover the private key of the signer, then sign the message "I broke ECDSA!" to prove you have the key.
 
 Given signatures:
-- Message 1: "attack at dawn" → signature: (r, s₁)
-- Message 2: "retreat at dusk" → signature: (r, s₂)
+```
+Message 1: "Edil Medeiros"
+signature: `4264b8b1ef4c77bf259a8d144689a0e6ea1aa6daf3761eb28b8b8669cf72f73907d78eea283d3841716efdd6eae4f559bc670f2674d0e4ffb66774c4796f71e6`
 
-Public key: [provided in exercise]
+Message 2: "Neha Narula"
+signature: `4264b8b1ef4c77bf259a8d144689a0e6ea1aa6daf3761eb28b8b8669cf72f73905a3eb1483b5498908be8c05c40da3e5a4d5d5cdfb1dc1f8adaca890a67605b0`
 
-*Expected output*: a text file `submissions/exercise02.txt` with a signature for the message "I broke ECDSA!" (128 hex characters) in a single line.
+Public key: `03133a3a03b4f9a731d4404338a278a0b73b1e20fa74fbeff2ec378ebdc4339cec`
+```
+
+*Expected output*: a text file `submissions/exercise02.txt` with a signature (`r||s` format) for the message "I broke ECDSA!" (128 hex characters) in a single line.
+The signature will be validated using the same public key as shown above.
+Your signature is not required to reuse the nonce.
 
 *Mathematical hint*: When two signatures share the same `r` value (indicating nonce reuse), you can recover the private key using modular arithmetic.
-The relationship `k = (H(m₁) - H(m₂))/(s₁ - s₂) mod n` allows you to find the nonce, then extract the private key.
+The relationship `k = (hash(m1) - hash(m2))/(s1 - s2) mod n` allows you to find the nonce, then extract the private key.
 Note that `n` is the secp256k1 group order:
 
-n = FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE BAAEDCE6 AF48A03B BFD25E8C D0364141
+n = `FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE BAAEDCE6 AF48A03B BFD25E8C D0364141`
 
+Do not try to naively brute force the signature, we are using real cryptographic schemes here (although in an insecure manner).
 This attack has occurred in real systems - notably the Sony PlayStation 3 and various Bitcoin wallets with poor random number generation.
 
-*Question for discussion*: how do we know that you succesfully recovered the right key by seeing only a valid signature you forged?
+*Question for discussion*: how do we know that you successfully recovered the right key by seeing only a valid signature you forged?
+
+*Bonus*: if you want to have a little more fun, let me tell that this private key was created by hashing (sha256) a 7 ascii-character string.
+Can you find which string was that?
+This is a technique many people used in the past to generate Bitcoin private keys.
+They all probably have lost their funds by now.
 
 
 ### Exercise 3: ECDSA known nonce attack
 
 You intercepted an ECDSA signature along with the nonce that was used to create it (another implementation vulnerability).
 This is a real threat in cryptocurrencies since digital signatures are publicly revealed when spending money and we can track when that money was received in the first place, providing an estimate for when a private key was generated.
-This information can be used to guess the private key if the wallet implementation used a weak random number generator.
+This information can be used to guess the private key if the wallet implementation used a weak random number generator (which happens even today).
 Use this information to recover the private key.
 
-Given:
-
-Message: "secret transaction"
-Signature: (r, s) [provided in exercise]
-Nonce k: [provided in exercise]
-Public key: [provided in exercise]
+```
+Message: "Satoshi Nakamoto"
+Signature (`r||s`): 133c76589b4cce6898e63a366e40d43a6471db814f5a354d52c4abcd067942780cc9b3d891c9a4eb8bcce6edc20f31937005595a7f7ea6a4bf20c3f6367f5155
+Nonce k: 0x718768e4b0ec256839ddcba80b7902a361d525f4be8c4904c275edd35625afb5
+Public key: 034be5c17ff958423a95313317aaf9997607ea64af9edfd90933d1466866794550
+```
 
 *Expected output*: a text file `submissions/exercise03.txt` with a signature for the message "I broke ECDSA again!" (128 hex characters) in a single line.
 
-*Mathematical hint*: With a known nonce k, the private key can be directly calculated from the signature equation: `d = (k·s - H(m))/r mod n`.
+TODO: CHECK ALL FORMULAS...
+
+*Mathematical hint*: With a known nonce `k`, the private key can be directly calculated from the signature equation: `d = (k·s - hash(m))/r mod n`.
 This vulnerability occurs when developers use weak random number generators, hardcoded nonces for "testing," or when side-channel attacks reveal nonce information.
 
 
@@ -98,10 +113,11 @@ This vulnerability occurs when developers use weak random number generators, har
 Given a valid ECDSA signature, create a different but equally valid signature for the same message and public key by exploiting signature malleability.
 
 Given:
-
+```
 Message: "transfer 100 BTC"
-Valid signature: (r, s) [provided in exercise]
-Public key: [provided in exercise]
+Valid signature: f474d12468415184847778e455189eb0a07df7696d69777008f59fe9ebe497727739e65b40f2a1587b47e953d6fdec9934e82c45c00fe41d446347f35b74708f
+Public key: 020e7d4f8640ec6f3382a1dd61b4b292f815864dc7b6c12ba2744597aa3504d674
+```
 
 *Expected output*: a text file `submissions/exercise04.txt` with your malleated signature (128 hex characters, r||s format).
 
@@ -112,7 +128,9 @@ Understanding malleability is crucial for secure protocol design, as it can enab
 
 *Questions for discussion*: can someone use this vulnerability to forge a signature, i.e. to spend your money on your behalf? Can someone use this vulnerability to steal something from you?
 
-Note that theses questions have different semantics: the former asks about security of the protocol, the later asks about the security of how people use the protocol for payments in the real world.
+Note that theses questions have different semantics: the former asks about the security of the protocol, the later asks about the security of how people use the protocol for payments in the real world.
+
+---
 
 ## Schnorr: a bag full of tricks
 
@@ -154,3 +172,4 @@ Public key B: P₂ = d₂·G
 *Mathematical insight*: This exploits Schnorr's linear properties.
 While naive addition of signatures doesn't work securely, this exercise demonstrates the mathematical foundation that enables advanced protocols like MuSig.
 This linearity is what makes Schnorr attractive for blockchain applications, enabling signature aggregation that improves both privacy and scalability.
+

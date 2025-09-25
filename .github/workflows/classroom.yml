@@ -1,0 +1,100 @@
+name: Autograding Tests
+on:
+  - push
+  - workflow_dispatch
+  - repository_dispatch
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f graders/requirements.txt ]; then pip install -r graders/requirements.txt; fi
+    
+    # Exercise 1
+    - name: Exercise 1 - ECDSA signing
+      id: exercise1
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: "Exercise 1: ECDSA signing"
+        command: "output=$(python3 graders/grader_exercise01.py 2>&1); echo \"$output\" >&2; echo \"$output\""
+        expected-output: "PASS"
+        comparison-method: exact
+        timeout: 10
+        max-score: 10
+    
+    # Exercise 2
+    - name: Exercise 2 - reused nonce
+      id: exercise2
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: "Exercise 2: Reused nonce"
+        command: "output=$(python3 graders/grader_exercise02.py 2>&1); echo \"$output\" >&2; echo \"$output\""
+        expected-output: "PASS"
+        comparison-method: exact
+        timeout: 10
+        max-score: 20
+    
+    # Exercise 3
+    - name: Exercise 3 - known nonce
+      id: exercise3
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: "Exercise 3: Known nonce"
+        command: "output=$(python3 graders/grader_exercise03.py 2>&1); echo \"$output\" >&2; echo \"$output\""
+        expected-output: "PASS"
+        comparison-method: exact
+        timeout: 10
+        max-score: 20
+    
+    # Exercise 4
+    - name: Exercise 4 - Signature malleability
+      id: exercise4
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: "Exercise 4: Signature malleability"
+        command: "output=$(python3 graders/grader_exercise04.py 2>&1); echo \"$output\" >&2; echo \"$output\""
+        expected-output: "PASS"
+        comparison-method: exact
+        timeout: 10
+        max-score: 20
+    
+    # Exercise 5: Personal Second Pre-image on Hash1
+    - name: Exercise 5 - Bitcoin transaction exploit
+      id: exercise5
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: "Exercise 5: Bitcoin transaction exploit"
+        command: "output=$(python3 graders/grader_exercise05.py 2>&1); echo \"$output\" >&2; echo \"$output\""
+        expected-output: "PASS"
+        comparison-method: exact
+        timeout: 10
+        max-score: 30
+    
+    # Report results
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        EXERCISE1_RESULTS: "${{ steps.exercise1.outputs.result }}"
+        EXERCISE2_RESULTS: "${{ steps.exercise2.outputs.result }}"
+        EXERCISE3_RESULTS: "${{ steps.exercise3.outputs.result }}"
+        EXERCISE4_RESULTS: "${{ steps.exercise4.outputs.result }}"
+        EXERCISE5_RESULTS: "${{ steps.exercise5.outputs.result }}"
+      with:
+        runners: exercise1,exercise2,exercise3,exercise4,exercise5

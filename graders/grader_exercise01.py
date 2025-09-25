@@ -1,4 +1,3 @@
-
 # grader_exercise01.py
 import hashlib
 import sys

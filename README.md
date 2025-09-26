@@ -23,7 +23,22 @@ You can use them to check your answers, but DO NOT MODIFY THE GRADER SCRIPTS.
 **All cryptographic operations must use the secp256k1 elliptic curve and the sha256 hash function**.
 This is the same curve used by Bitcoin and Ethereum, making your implementations directly relevant to real cryptocurrency systems.
 
-You can use any programming language you prefer - the graders only check the final results you provide in text files.
+You can use any programming language you prefer, the graders will check only the final results you provide in text files.
+You don't need to implement the cryptographic primitives yourself (although doing so is a fantastic learning experience if you are interested in cryptography).
+Here is a list of libraries you can use to solve these exercises:
+
+- Python: `ecdsa`
+- C: `libsecp256k1`, `openssl`
+- Rust: `rust-secp256k1`, `k256`
+- Go: `btcsuite/btcec`
+
+You'll need a big integer implementation to do signature calculations:
+
+- Python: builtin `int` type
+- C/C++: `openssl bignum`, `gnu gmp`, `libsecp256k1` scalar type
+- Rust: `num-bigint`, `ibig`
+- Go: builtin `math/big.Int`
+
 Please commit your source code to the `implementation` folder so instructors can provide feedback on your approach.
 The autograder is triggered when you push changes to the `main` branch.
 Check its output on the `Actions` tab in the GitHub interface.

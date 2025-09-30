@@ -64,7 +64,37 @@ The autograder will verify that your signature is mathematically valid for the g
 
 ---
 
-### Exercise 2: ECDSA nonce reuse attack
+### Exercise 2: ECDSA known nonce attack
+
+You intercepted an ECDSA signature along with the nonce that was used to create it (another implementation vulnerability).
+This is a real threat in cryptocurrencies since digital signatures are publicly revealed when spending money and we can track when that money was received in the first place, providing an estimate for when a private key was generated.
+This information can be used to guess the private key if the wallet implementation used a weak random number generator (which happens even today).
+Use this information to recover the private key.
+
+```
+Message: "Satoshi Nakamoto"
+Signature (`r||s`): 133c76589b4cce6898e63a366e40d43a6471db814f5a354d52c4abcd067942780cc9b3d891c9a4eb8bcce6edc20f31937005595a7f7ea6a4bf20c3f6367f5155
+Nonce k: 718768e4b0ec256839ddcba80b7902a361d525f4be8c4904c275edd35625afb5
+Public key: 034be5c17ff958423a95313317aaf9997607ea64af9edfd90933d1466866794550
+```
+
+*Expected output*: a text file `solutions/exercise02.txt` with a signature for the message "I broke ECDSA again!" (128 hex characters) in a single line.
+The signature will be validated using the same public key as shown above.
+Your signature is not required to reuse the nonce.
+
+*Mathematical hint*: With a known nonce `k`, the private key `e` can be directly calculated from the signature equation: `s = k^(-1) * (hash(m) + r*e) mod n`.
+Note that these operations should be calculated modulo `n`, the order of the secp256k1 group:
+
+n = `FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE BAAEDCE6 AF48A03B BFD25E8C D0364141`
+
+This vulnerability occurs when developers use weak random number generators, hardcoded nonces for "testing," or when side-channel attacks reveal nonce information.
+Do not try to naively brute force the signature, we are using real cryptographic schemes here (although in an insecure manner).
+
+*Question for discussion*: how do we know that you successfully recovered the right key by seeing only a valid signature you forged?
+
+---
+
+### Exercise 3: ECDSA nonce reuse attack
 
 You are given two ECDSA signatures that were created using the same nonce `k` (a critical vulnerability).
 Use them to recover the private key of the signer, then sign the message "I broke ECDSA!" to prove you recovered my private key.
@@ -80,51 +110,22 @@ signature: `4264b8b1ef4c77bf259a8d144689a0e6ea1aa6daf3761eb28b8b8669cf72f73905a3
 My public key: `03133a3a03b4f9a731d4404338a278a0b73b1e20fa74fbeff2ec378ebdc4339cec`
 ```
 
-*Expected output*: a text file `solutions/exercise02.txt` with a signature (`r||s` format) for the message "I broke ECDSA!" (128 hex characters) in a single line.
+*Expected output*: a text file `solutions/exercise03.txt` with a signature (`r||s` format) for the message "I broke ECDSA!" (128 hex characters) in a single line.
 The signature will be validated using the same public key as shown above.
 Your signature is not required to reuse the nonce.
 
-*Mathematical hint*: When two signatures share the same `r` value (indicating nonce reuse), you can recover the private key using modular arithmetic.
+*Mathematical hint*: When two signatures share the same `r` value (indicating nonce reuse), you can recover the nonce using modular arithmetic.
 The relationship `k = (hash(m1) - hash(m2))/(s1 - s2) mod n` allows you to find the nonce, then extract the private key.
-Note that `n` is the secp256k1 group order:
 
-n = `FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE BAAEDCE6 AF48A03B BFD25E8C D0364141`
-
-Do not try to naively brute force the signature, we are using real cryptographic schemes here (although in an insecure manner).
 This attack has occurred in real systems - notably the Sony PlayStation 3 and various Bitcoin wallets with poor random number generation.
 
 *Question for discussion*: how could you know those signatures reused the nonce if I didn't told you so?
-
-*Question for discussion*: how do we know that you successfully recovered the right key by seeing only a valid signature you forged?
 
 *Bonus*: if you want to have a little more fun, let me tell that this private key was created by hashing (`sha256`) a 7 ascii-character string.
 Can you find which string was that?
 We call this a low entropy key.
 This is an insecure key generation technique that many people used in the past (and still use) to generate private keys.
 They all probably have lost their funds by now.
-
----
-
-### Exercise 3: ECDSA known nonce attack
-
-You intercepted an ECDSA signature along with the nonce that was used to create it (another implementation vulnerability).
-This is a real threat in cryptocurrencies since digital signatures are publicly revealed when spending money and we can track when that money was received in the first place, providing an estimate for when a private key was generated.
-This information can be used to guess the private key if the wallet implementation used a weak random number generator (which happens even today).
-Use this information to recover the private key.
-
-```
-Message: "Satoshi Nakamoto"
-Signature (`r||s`): 133c76589b4cce6898e63a366e40d43a6471db814f5a354d52c4abcd067942780cc9b3d891c9a4eb8bcce6edc20f31937005595a7f7ea6a4bf20c3f6367f5155
-Nonce k: 718768e4b0ec256839ddcba80b7902a361d525f4be8c4904c275edd35625afb5
-Public key: 034be5c17ff958423a95313317aaf9997607ea64af9edfd90933d1466866794550
-```
-
-*Expected output*: a text file `solutions/exercise03.txt` with a signature for the message "I broke ECDSA again!" (128 hex characters) in a single line.
-The signature will be validated using the same public key as shown above.
-Your signature is not required to reuse the nonce.
-
-*Mathematical hint*: With a known nonce `k`, the private key `e` can be directly calculated from the signature equation: `e = (k·s - hash(m))/r mod n`.
-This vulnerability occurs when developers use weak random number generators, hardcoded nonces for "testing," or when side-channel attacks reveal nonce information.
 
 ---
 

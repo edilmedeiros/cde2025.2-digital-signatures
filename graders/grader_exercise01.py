@@ -1,12 +1,14 @@
 # grader_exercise01.py
 import hashlib
 import sys
-from ecdsa import VerifyingKey, SECP256k1, ellipticcurve
+from ecdsa import VerifyingKey, SECP256k1
+
 
 def parse_sig(signature: str, n):
     r = int(signature[:64], 16)
     s = int(signature[64:], 16)
-    return (r,s)
+    return (r, s)
+
 
 def grade(filename="solutions/exercise01.txt"):
     with open(filename) as f:
@@ -19,26 +21,25 @@ def grade(filename="solutions/exercise01.txt"):
     # Recover pubkey
     pubkey_raw = bytes.fromhex(pubkey_hex)
     try:
-        vk = VerifyingKey.from_string(pubkey_raw, 
-                                      curve=SECP256k1,
-                                      hashfunc=hashlib.sha256)
-    except:
+        vk = VerifyingKey.from_string(
+            pubkey_raw, curve=SECP256k1, hashfunc=hashlib.sha256
+        )
+    except Exception:
         # Got an invalid pubkey
         return "FAIL"
 
-
     # verify signature
     message = b"Hello Bitcoin!"
-    try: 
-        ok = vk.verify(sig_hex,
-                       data=message, 
-                       hashfunc=hashlib.sha256,
-                       sigdecode=parse_sig)
-    except Exception as e:
+    try:
+        ok = vk.verify(
+            sig_hex, data=message, hashfunc=hashlib.sha256, sigdecode=parse_sig
+        )
+    except Exception:
         # Signature is invalid
         return "FAIL"
 
     return "PASS" if ok else "FAIL"
+
 
 if __name__ == "__main__":
     fname = sys.argv[1] if len(sys.argv) > 1 else "solutions/exercise01.txt"

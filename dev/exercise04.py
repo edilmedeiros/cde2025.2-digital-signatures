@@ -14,7 +14,7 @@ z = hashlib.sha256(message).digest()
 r, s = sk.sign_digest(z, sigencode=lambda r, s, order: (r, s))
 
 # 4. Format outputs
-pubkey_compressed = vk.to_string('compressed')
+pubkey_compressed = vk.to_string("compressed")
 r_hex = r.to_bytes(32, "big").hex()
 s_hex = s.to_bytes(32, "big").hex()
 signature_hex = r_hex + s_hex

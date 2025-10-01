@@ -16,7 +16,7 @@ def grade(filename="solutions/exercise04.txt"):
 
     # signature must be different from the provided one
     if (
-        sig_hex.hex()
+        sig_hex
         == "f474d12468415184847778e455189eb0a07df7696d69777008f59fe9ebe497727739e65b40f2a1587b47e953d6fdec9934e82c45c00fe41d446347f35b74708f"
     ):
         return "FAIL"
